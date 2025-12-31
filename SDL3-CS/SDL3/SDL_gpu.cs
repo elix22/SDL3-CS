@@ -50,8 +50,4 @@ namespace SDL
         SDL_GPU_COLORCOMPONENT_B = (byte)SDL3.SDL_GPU_COLORCOMPONENT_B,
         SDL_GPU_COLORCOMPONENT_A = (byte)SDL3.SDL_GPU_COLORCOMPONENT_A,
     }
-
-    public static partial class SDL3
-    {
-    }
 }

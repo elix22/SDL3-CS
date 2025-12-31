@@ -155,6 +155,7 @@ namespace SDL
         SDL_PIXELFORMAT_NV21 = 0x3132564eU,
         SDL_PIXELFORMAT_P010 = 0x30313050U,
         SDL_PIXELFORMAT_EXTERNAL_OES = 0x2053454fU,
+        SDL_PIXELFORMAT_MJPG = 0x47504a4dU,
     }
 
     public enum SDL_ColorType
@@ -253,7 +254,7 @@ namespace SDL
         SDL_COLORSPACE_BT2020_LIMITED = 0x21102609U,
         SDL_COLORSPACE_BT2020_FULL = 0x22102609U,
         SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
-        SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG,
+        SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_BT601_LIMITED,
     }
 
     public partial struct SDL_Color
@@ -386,10 +387,10 @@ namespace SDL
         public static extern uint SDL_MapRGBA([NativeTypeName("const SDL_PixelFormatDetails *")] SDL_PixelFormatDetails* format, [NativeTypeName("const SDL_Palette *")] SDL_Palette* palette, [NativeTypeName("Uint8")] byte r, [NativeTypeName("Uint8")] byte g, [NativeTypeName("Uint8")] byte b, [NativeTypeName("Uint8")] byte a);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void SDL_GetRGB([NativeTypeName("Uint32")] uint pixel, [NativeTypeName("const SDL_PixelFormatDetails *")] SDL_PixelFormatDetails* format, [NativeTypeName("const SDL_Palette *")] SDL_Palette* palette, [NativeTypeName("Uint8 *")] byte* r, [NativeTypeName("Uint8 *")] byte* g, [NativeTypeName("Uint8 *")] byte* b);
+        public static extern void SDL_GetRGB([NativeTypeName("Uint32")] uint pixelvalue, [NativeTypeName("const SDL_PixelFormatDetails *")] SDL_PixelFormatDetails* format, [NativeTypeName("const SDL_Palette *")] SDL_Palette* palette, [NativeTypeName("Uint8 *")] byte* r, [NativeTypeName("Uint8 *")] byte* g, [NativeTypeName("Uint8 *")] byte* b);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void SDL_GetRGBA([NativeTypeName("Uint32")] uint pixel, [NativeTypeName("const SDL_PixelFormatDetails *")] SDL_PixelFormatDetails* format, [NativeTypeName("const SDL_Palette *")] SDL_Palette* palette, [NativeTypeName("Uint8 *")] byte* r, [NativeTypeName("Uint8 *")] byte* g, [NativeTypeName("Uint8 *")] byte* b, [NativeTypeName("Uint8 *")] byte* a);
+        public static extern void SDL_GetRGBA([NativeTypeName("Uint32")] uint pixelvalue, [NativeTypeName("const SDL_PixelFormatDetails *")] SDL_PixelFormatDetails* format, [NativeTypeName("const SDL_Palette *")] SDL_Palette* palette, [NativeTypeName("Uint8 *")] byte* r, [NativeTypeName("Uint8 *")] byte* g, [NativeTypeName("Uint8 *")] byte* b, [NativeTypeName("Uint8 *")] byte* a);
 
         [NativeTypeName("#define SDL_ALPHA_OPAQUE 255")]
         public const int SDL_ALPHA_OPAQUE = 255;

@@ -16,6 +16,7 @@ Usage:
 Example:
 - python generate_bindings.py
 - python generate_bindings.py SDL3/SDL_audio.h
+- python generate_bindings.py SDL3_ttf/SDL_ttf.h
 - python generate_bindings.py SDL_audio.h
 - python generate_bindings.py SDL_audio
 - python generate_bindings.py audio
@@ -34,8 +35,15 @@ unsafe_prefix = "Unsafe_"
 
 repository_root = pathlib.Path(__file__).resolve().parents[1]
 
-SDL_root = repository_root / "External" / "SDL"
-SDL_include_root = SDL_root / "include"
+SDL_lib_root = "External"
+SDL_libs = ["SDL", "SDL_image", "SDL_ttf", "SDL_mixer"]
+SDL_lib_include_root = {
+    "SDL3": SDL_lib_root + "/SDL/include",
+    "SDL3_image": SDL_lib_root + "/SDL_image/include",
+    "SDL3_ttf": SDL_lib_root + "/SDL_ttf/include",
+    "SDL3_mixer": SDL_lib_root + "/SDL_mixer/include",
+}
+
 SDL3_header_base = "SDL3"  # base folder of header files
 
 csproj_root = repository_root / "SDL3-CS"
@@ -44,12 +52,13 @@ csproj_root = repository_root / "SDL3-CS"
 class Header:
     """Represents a SDL header file that is used in ClangSharp generation."""
 
-    def __init__(self, base: str, name: str, output_suffix=None):
-        assert base == SDL3_header_base
+    def __init__(self, base: str, name: str, folder: str, output_suffix=None):
+        assert base in SDL_lib_include_root
         assert name.startswith("SDL")
         assert not name.endswith(".h")
         self.base = base
         self.name = name
+        self.folder = folder
         self.output_suffix = output_suffix
 
     def __str__(self):
@@ -60,28 +69,28 @@ class Header:
         return f"{self.name}.h"
 
     def input_file(self):
-        """Input header file relative to SDL_include_root."""
-        return f"{self.base}/{self.name}.h"
+        """Input header file relative to repository_root."""
+        return f"{self.folder}/{self.base}/{self.name}.h"
 
     def output_file(self):
         """Location of generated C# file."""
         if self.output_suffix is None:
-            return csproj_root / f"{self.base}/ClangSharp/{self.name}.g.cs"
+            return repository_root / f"{self.base}-CS" / f"{self.base}/ClangSharp/{self.name}.g.cs"
         else:
-            return csproj_root / f"{self.base}/ClangSharp/{self.name}.{self.output_suffix}.g.cs"
+            return repository_root / f"{self.base}-CS" / f"{self.base}/ClangSharp/{self.name}.{self.output_suffix}.g.cs"
 
     def rsp_files(self):
         """Location of ClangSharp response files."""
-        yield csproj_root / f"{self.base}/{self.name}.rsp"
+        yield repository_root / f"{self.base}-CS" / f"{self.base}/{self.name}.rsp"
         if self.output_suffix is not None:
-            yield csproj_root / f"{self.base}/{self.name}.{self.output_suffix}.rsp"
+            yield repository_root / f"{self.base}-CS" / f"{self.base}/{self.name}.{self.output_suffix}.rsp"
 
     def cs_file(self):
         """Location of the manually-written C# file that implements some parts of the header."""
         if self.output_suffix is None:
-            return csproj_root / f"{self.base}/{self.name}.cs"
+            return repository_root / f"{self.base}-CS" / f"{self.base}/{self.name}.cs"
         else:
-            return csproj_root / f"{self.base}/{self.name}.{self.output_suffix}.cs"
+            return repository_root / f"{self.base}-CS" / f"{self.base}/{self.name}.{self.output_suffix}.cs"
 
 
 def make_header_fuzzy(s: str) -> Header:
@@ -99,18 +108,19 @@ def make_header_fuzzy(s: str) -> Header:
     if name.endswith(".h"):
         name = name.replace(".h", "")
 
-    return Header(base, name)
+    return Header(base, name, SDL_lib_include_root[base])
 
 
 def add(s: str):
     base, name = s.split("/")
     assert s.endswith(".h")
     name = name.replace(".h", "")
-    return Header(base, name)
+    return Header(base, name, SDL_lib_include_root[base])
 
 
 headers = [
     add("SDL3/SDL_atomic.h"),
+    add("SDL3/SDL_asyncio.h"),
     add("SDL3/SDL_audio.h"),
     add("SDL3/SDL_blendmode.h"),
     add("SDL3/SDL_camera.h"),
@@ -161,22 +171,27 @@ headers = [
     add("SDL3/SDL_version.h"),
     add("SDL3/SDL_video.h"),
     add("SDL3/SDL_vulkan.h"),
+    add("SDL3_image/SDL_image.h"),
+    add("SDL3_ttf/SDL_ttf.h"),
+    add("SDL3_ttf/SDL_textengine.h"),
+    add("SDL3_mixer/SDL_mixer.h"),
 ]
 
 
 def prepare_sdl_source():
-    subprocess.run([
-        "git",
-        "reset",
-        "--hard",
-        "HEAD"
-    ], cwd=SDL_root)
+    for lib in SDL_libs:
+        subprocess.run([
+            "git",
+            "reset",
+            "--hard",
+            "HEAD"
+        ], cwd=repository_root / SDL_lib_root / lib)
 
 
 def get_sdl_api_dump():
     subprocess.run([
         sys.executable,
-        SDL_root / "src" / "dynapi" / "gendynapi.py",
+        repository_root / SDL_lib_root / "SDL" / "src" / "dynapi" / "gendynapi.py",
         "--dump"
     ])
 
@@ -211,7 +226,7 @@ def check_generated_functions(sdl_api, header, generated_file_paths):
             print(f"[⚠️ Warning] Function {name} not found in generated files:", *generated_file_paths)
 
 
-defined_constant_regex = re.compile(r"\[Constant]\s*public (const|static readonly) \w+ (SDL_\w+) = ", re.MULTILINE)
+defined_constant_regex = re.compile(r"\[Constant]\s*public (const|static readonly) \w+ (\w+_\w+) = ", re.MULTILINE)
 
 
 def get_manually_written_symbols(header):
@@ -222,11 +237,10 @@ def get_manually_written_symbols(header):
             text = f.read()
             for match in defined_constant_regex.finditer(text):
                 m = match.group(2)
-                assert m.startswith("SDL_")
                 yield m
 
 
-typedef_enum_regex = re.compile(r"\[Typedef]\s*public enum (SDL_\w+)", re.MULTILINE)
+typedef_enum_regex = re.compile(r"\[Typedef]\s*public enum (\w+_\w+)", re.MULTILINE)
 
 
 def get_typedefs():
@@ -244,17 +258,18 @@ def typedef(t):
 
 base_command = [
     "dotnet", "tool", "run", "ClangSharpPInvokeGenerator",
-    "--headerFile", csproj_root / "SDL.licenseheader",
+    "--headerFile", csproj_root / "SDL-license-header.txt",
 
     "--config",
     "latest-codegen",
     "windows-types",
     "generate-macro-bindings",
 
-    "--file-directory", SDL_include_root,
-    "--include-directory", SDL_include_root,
-    "--libraryPath", "SDL3",
-    "--methodClassName", "SDL3",
+    "--file-directory", repository_root,
+    "--include-directory", repository_root / SDL_lib_include_root["SDL3"],
+    "--include-directory", repository_root / SDL_lib_include_root["SDL3_image"],
+    "--include-directory", repository_root / SDL_lib_include_root["SDL3_ttf"],
+    "--include-directory", repository_root / SDL_lib_include_root["SDL3_mixer"],
     "--namespace", "SDL",
 
     "--remap",
@@ -296,6 +311,8 @@ def run_clangsharp(command, header: Header):
     cmd = command + [
         "--file", header.input_file(),
         "--output", header.output_file(),
+        "--libraryPath", header.base,
+        "--methodClassName", header.base,
     ]
 
     for rsp in header.rsp_files():
@@ -351,7 +368,12 @@ def generate_platform_specific_headers(sdl_api, header: Header, platforms):
 def get_string_returning_functions(sdl_api):
     for f in sdl_api:
         if f["retval"] in ("const char*", "char*"):
-            yield f
+            yield f["name"]
+
+    yield "TTF_GetFontFamilyName"
+    yield "TTF_GetFontStyleName"
+
+    yield "MIX_GetAudioDecoder"
 
 
 def should_skip(solo_headers: list[Header], header: Header):
@@ -383,8 +405,7 @@ def main():
     str_ret_funcs = list(get_string_returning_functions(sdl_api))
     if str_ret_funcs:
         base_command.append("--remap")
-        for func in str_ret_funcs:
-            name = func["name"]
+        for name in str_ret_funcs:
             # add unsafe prefix to `const char *` functions so that the source generator can make friendly overloads with the unprefixed name.
             base_command.append(f"{name}={unsafe_prefix}{name}")
 

@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>SDL</RootNamespace>
-    <TargetFrameworks>net8.0;net8.0-android</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(CI_DONT_TARGET_ANDROID)' != '1' ">net8.0;net8.0-android</TargetFrameworks>
+    <TargetFramework Condition=" '$(CI_DONT_TARGET_ANDROID)' == '1' ">net8.0</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -16,19 +17,23 @@
     <Copyright>Copyright (c) 2024 ppy Pty Ltd</Copyright>
     <Product>ppy.SDL3-CS</Product>
     <PackageId>ppy.SDL3-CS</PackageId>
+    <PackageTags>SDL;SDL3;SDL3-CS</PackageTags>
     <PackageReleaseNotes>Automated release.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/ppy/SDL3-CS</PackageProjectUrl>
+    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ppy/SDL3-CS</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\README_nuget.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SDL3-CS.SourceGeneration\SDL3-CS.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2023.3.0"/>
-
     <PackageReference Include="libclang" Version="17.0.4">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -75,8 +80,8 @@
       <PackagePath>runtimes/linux-arm/native</PackagePath>
       <Pack>true</Pack>
     </None>
-    <None Include="$(MSBuildThisFileDirectory)..\native\ios\**\*">
-      <PackagePath>runtimes/ios/native</PackagePath>
+    <None Include="$(MSBuildThisFileDirectory)..\native\ios\SDL3.xcframework\**\*">
+      <PackagePath>runtimes/ios/native/SDL3.xcframework</PackagePath>
       <Pack>true</Pack>
     </None>
     <None Include="$(MSBuildThisFileDirectory)..\native\android\armeabi-v7a\libSDL3.so">
@@ -95,7 +100,7 @@
       <PackagePath>runtimes/android-x86/native</PackagePath>
       <Pack>true</Pack>
     </None>
-    <EmbeddedJar Include="Jars\SDL3AndroidBridge.jar" />
+    <EmbeddedJar Include="Jars\SDL3AndroidBridge.jar"/>
   </ItemGroup>
 
 </Project>

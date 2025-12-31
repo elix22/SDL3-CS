@@ -813,8 +813,8 @@ namespace SDL
         [NativeTypeName("bool")]
         public SDLBool enable_mask;
 
-        [NativeTypeName("Uint8")]
-        public byte padding1;
+        [NativeTypeName("bool")]
+        public SDLBool enable_alpha_to_coverage;
 
         [NativeTypeName("Uint8")]
         public byte padding2;
@@ -1008,10 +1008,10 @@ namespace SDL
         public byte clear_stencil;
 
         [NativeTypeName("Uint8")]
-        public byte padding1;
+        public byte mip_level;
 
         [NativeTypeName("Uint8")]
-        public byte padding2;
+        public byte layer;
     }
 
     public partial struct SDL_GPUBlitInfo
@@ -1096,6 +1096,30 @@ namespace SDL
         public byte padding3;
     }
 
+    public unsafe partial struct SDL_GPUVulkanOptions
+    {
+        [NativeTypeName("Uint32")]
+        public uint vulkan_api_version;
+
+        [NativeTypeName("void*")]
+        public IntPtr feature_list;
+
+        [NativeTypeName("void*")]
+        public IntPtr vulkan_10_physical_device_features;
+
+        [NativeTypeName("Uint32")]
+        public uint device_extension_count;
+
+        [NativeTypeName("const char **")]
+        public byte** device_extension_names;
+
+        [NativeTypeName("Uint32")]
+        public uint instance_extension_count;
+
+        [NativeTypeName("const char **")]
+        public byte** instance_extension_names;
+    }
+
     public static unsafe partial class SDL3
     {
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -1128,6 +1152,9 @@ namespace SDL
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice* device);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_PropertiesID SDL_GetGPUDeviceProperties(SDL_GPUDevice* device);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern SDL_GPUComputePipeline* SDL_CreateGPUComputePipeline(SDL_GPUDevice* device, [NativeTypeName("const SDL_GPUComputePipelineCreateInfo *")] SDL_GPUComputePipelineCreateInfo* createinfo);
@@ -1396,6 +1423,12 @@ namespace SDL
         [return: NativeTypeName("Uint32")]
         public static extern uint SDL_CalculateGPUTextureFormatSize(SDL_GPUTextureFormat format, [NativeTypeName("Uint32")] uint width, [NativeTypeName("Uint32")] uint height, [NativeTypeName("Uint32")] uint depth_or_layer_count);
 
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_PixelFormat SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat format);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format);
+
         [NativeTypeName("#define SDL_GPU_TEXTUREUSAGE_SAMPLER (1u << 0)")]
         public const uint SDL_GPU_TEXTUREUSAGE_SAMPLER = (1U << 0);
 
@@ -1474,8 +1507,23 @@ namespace SDL
         [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN \"SDL.gpu.device.create.preferlowpower\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN => "SDL.gpu.device.create.preferlowpower"u8;
 
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN \"SDL.gpu.device.create.verbose\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN => "SDL.gpu.device.create.verbose"u8;
+
         [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING \"SDL.gpu.device.create.name\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING => "SDL.gpu.device.create.name"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN \"SDL.gpu.device.create.feature.clip_distance\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN => "SDL.gpu.device.create.feature.clip_distance"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN \"SDL.gpu.device.create.feature.depth_clamping\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN => "SDL.gpu.device.create.feature.depth_clamping"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN \"SDL.gpu.device.create.feature.indirect_draw_first_instance\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN => "SDL.gpu.device.create.feature.indirect_draw_first_instance"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN \"SDL.gpu.device.create.feature.anisotropy\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN => "SDL.gpu.device.create.feature.anisotropy"u8;
 
         [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN \"SDL.gpu.device.create.shaders.private\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN => "SDL.gpu.device.create.shaders.private"u8;
@@ -1495,8 +1543,29 @@ namespace SDL
         [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN \"SDL.gpu.device.create.shaders.metallib\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN => "SDL.gpu.device.create.shaders.metallib"u8;
 
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN \"SDL.gpu.device.create.d3d12.allowtier1resourcebinding\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN => "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"u8;
+
         [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING \"SDL.gpu.device.create.d3d12.semantic\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING => "SDL.gpu.device.create.d3d12.semantic"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN \"SDL.gpu.device.create.vulkan.requirehardwareacceleration\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN => "SDL.gpu.device.create.vulkan.requirehardwareacceleration"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER \"SDL.gpu.device.create.vulkan.options\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER => "SDL.gpu.device.create.vulkan.options"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_NAME_STRING \"SDL.gpu.device.name\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_NAME_STRING => "SDL.gpu.device.name"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING \"SDL.gpu.device.driver_name\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING => "SDL.gpu.device.driver_name"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING \"SDL.gpu.device.driver_version\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING => "SDL.gpu.device.driver_version"u8;
+
+        [NativeTypeName("#define SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING \"SDL.gpu.device.driver_info\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING => "SDL.gpu.device.driver_info"u8;
 
         [NativeTypeName("#define SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING \"SDL.gpu.computepipeline.create.name\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING => "SDL.gpu.computepipeline.create.name"u8;
@@ -1525,8 +1594,8 @@ namespace SDL
         [NativeTypeName("#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT \"SDL.gpu.texture.create.d3d12.clear.depth\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT => "SDL.gpu.texture.create.d3d12.clear.depth"u8;
 
-        [NativeTypeName("#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8 \"SDL.gpu.texture.create.d3d12.clear.stencil\"")]
-        public static ReadOnlySpan<byte> SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8 => "SDL.gpu.texture.create.d3d12.clear.stencil"u8;
+        [NativeTypeName("#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER \"SDL.gpu.texture.create.d3d12.clear.stencil\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER => "SDL.gpu.texture.create.d3d12.clear.stencil"u8;
 
         [NativeTypeName("#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING \"SDL.gpu.texture.create.name\"")]
         public static ReadOnlySpan<byte> SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING => "SDL.gpu.texture.create.name"u8;

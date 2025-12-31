@@ -44,6 +44,14 @@ namespace SDL
         SDL_TEXTUREACCESS_TARGET,
     }
 
+    public enum SDL_TextureAddressMode
+    {
+        SDL_TEXTURE_ADDRESS_INVALID = -1,
+        SDL_TEXTURE_ADDRESS_AUTO,
+        SDL_TEXTURE_ADDRESS_CLAMP,
+        SDL_TEXTURE_ADDRESS_WRAP,
+    }
+
     public enum SDL_RendererLogicalPresentation
     {
         SDL_LOGICAL_PRESENTATION_DISABLED,
@@ -68,6 +76,35 @@ namespace SDL
         public int refcount;
     }
 
+    public unsafe partial struct SDL_GPURenderStateCreateInfo
+    {
+        public SDL_GPUShader* fragment_shader;
+
+        [NativeTypeName("Sint32")]
+        public int num_sampler_bindings;
+
+        [NativeTypeName("const SDL_GPUTextureSamplerBinding *")]
+        public SDL_GPUTextureSamplerBinding* sampler_bindings;
+
+        [NativeTypeName("Sint32")]
+        public int num_storage_textures;
+
+        [NativeTypeName("SDL_GPUTexture *const *")]
+        public SDL_GPUTexture** storage_textures;
+
+        [NativeTypeName("Sint32")]
+        public int num_storage_buffers;
+
+        [NativeTypeName("SDL_GPUBuffer *const *")]
+        public SDL_GPUBuffer** storage_buffers;
+
+        public SDL_PropertiesID props;
+    }
+
+    public partial struct SDL_GPURenderState
+    {
+    }
+
     public static unsafe partial class SDL3
     {
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -86,6 +123,12 @@ namespace SDL
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern SDL_Renderer* SDL_CreateRendererWithProperties(SDL_PropertiesID props);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_Renderer* SDL_CreateGPURenderer(SDL_GPUDevice* device, SDL_Window* window);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_GPUDevice* SDL_GetGPURendererDevice(SDL_Renderer* renderer);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern SDL_Renderer* SDL_CreateSoftwareRenderer(SDL_Surface* surface);
@@ -129,6 +172,13 @@ namespace SDL
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
         public static extern SDLBool SDL_GetTextureSize(SDL_Texture* texture, float* w, float* h);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_SetTexturePalette(SDL_Texture* texture, SDL_Palette* palette);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_Palette* SDL_GetTexturePalette(SDL_Texture* texture);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
@@ -358,11 +408,23 @@ namespace SDL
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_RenderTexture9GridTiled(SDL_Renderer* renderer, SDL_Texture* texture, [NativeTypeName("const SDL_FRect *")] SDL_FRect* srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, [NativeTypeName("const SDL_FRect *")] SDL_FRect* dstrect, float tileScale);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
         public static extern SDLBool SDL_RenderGeometry(SDL_Renderer* renderer, SDL_Texture* texture, [NativeTypeName("const SDL_Vertex *")] SDL_Vertex* vertices, int num_vertices, [NativeTypeName("const int *")] int* indices, int num_indices);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
         public static extern SDLBool SDL_RenderGeometryRaw(SDL_Renderer* renderer, SDL_Texture* texture, [NativeTypeName("const float *")] float* xy, int xy_stride, [NativeTypeName("const SDL_FColor *")] SDL_FColor* color, int color_stride, [NativeTypeName("const float *")] float* uv, int uv_stride, int num_vertices, [NativeTypeName("const void *")] IntPtr indices, int num_indices, int size_indices);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_SetRenderTextureAddressMode(SDL_Renderer* renderer, SDL_TextureAddressMode u_mode, SDL_TextureAddressMode v_mode);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_GetRenderTextureAddressMode(SDL_Renderer* renderer, SDL_TextureAddressMode* u_mode, SDL_TextureAddressMode* v_mode);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern SDL_Surface* SDL_RenderReadPixels(SDL_Renderer* renderer, [NativeTypeName("const SDL_Rect *")] SDL_Rect* rect);
@@ -409,8 +471,33 @@ namespace SDL
         [return: NativeTypeName("bool")]
         public static extern SDLBool SDL_RenderDebugTextFormat(SDL_Renderer* renderer, float x, float y, [NativeTypeName("const char *")] byte* fmt, __arglist);
 
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_SetDefaultTextureScaleMode(SDL_Renderer* renderer, SDL_ScaleMode scale_mode);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_GetDefaultTextureScaleMode(SDL_Renderer* renderer, SDL_ScaleMode* scale_mode);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern SDL_GPURenderState* SDL_CreateGPURenderState(SDL_Renderer* renderer, SDL_GPURenderStateCreateInfo* createinfo);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState* state, [NativeTypeName("Uint32")] uint slot_index, [NativeTypeName("const void *")] IntPtr data, [NativeTypeName("Uint32")] uint length);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("bool")]
+        public static extern SDLBool SDL_SetGPURenderState(SDL_Renderer* renderer, SDL_GPURenderState* state);
+
+        [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void SDL_DestroyGPURenderState(SDL_GPURenderState* state);
+
         [NativeTypeName("#define SDL_SOFTWARE_RENDERER \"software\"")]
         public static ReadOnlySpan<byte> SDL_SOFTWARE_RENDERER => "software"u8;
+
+        [NativeTypeName("#define SDL_GPU_RENDERER \"gpu\"")]
+        public static ReadOnlySpan<byte> SDL_GPU_RENDERER => "gpu"u8;
 
         [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_NAME_STRING \"SDL.renderer.create.name\"")]
         public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_NAME_STRING => "SDL.renderer.create.name"u8;
@@ -426,6 +513,18 @@ namespace SDL
 
         [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER \"SDL.renderer.create.present_vsync\"")]
         public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER => "SDL.renderer.create.present_vsync"u8;
+
+        [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER \"SDL.renderer.create.gpu.device\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER => "SDL.renderer.create.gpu.device"u8;
+
+        [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN \"SDL.renderer.create.gpu.shaders_spirv\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN => "SDL.renderer.create.gpu.shaders_spirv"u8;
+
+        [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN \"SDL.renderer.create.gpu.shaders_dxil\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN => "SDL.renderer.create.gpu.shaders_dxil"u8;
+
+        [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN \"SDL.renderer.create.gpu.shaders_msl\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN => "SDL.renderer.create.gpu.shaders_msl"u8;
 
         [NativeTypeName("#define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER \"SDL.renderer.create.vulkan.instance\"")]
         public static ReadOnlySpan<byte> SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER => "SDL.renderer.create.vulkan.instance"u8;
@@ -462,6 +561,9 @@ namespace SDL
 
         [NativeTypeName("#define SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER \"SDL.renderer.texture_formats\"")]
         public static ReadOnlySpan<byte> SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER => "SDL.renderer.texture_formats"u8;
+
+        [NativeTypeName("#define SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN \"SDL.renderer.texture_wrapping\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN => "SDL.renderer.texture_wrapping"u8;
 
         [NativeTypeName("#define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER \"SDL.renderer.output_colorspace\"")]
         public static ReadOnlySpan<byte> SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER => "SDL.renderer.output_colorspace"u8;
@@ -532,6 +634,9 @@ namespace SDL
         [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER \"SDL.texture.create.height\"")]
         public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER => "SDL.texture.create.height"u8;
 
+        [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER \"SDL.texture.create.palette\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER => "SDL.texture.create.palette"u8;
+
         [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT \"SDL.texture.create.SDR_white_point\"")]
         public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT => "SDL.texture.create.SDR_white_point"u8;
 
@@ -585,6 +690,18 @@ namespace SDL
 
         [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER \"SDL.texture.create.vulkan.texture\"")]
         public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER => "SDL.texture.create.vulkan.texture"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER \"SDL.texture.create.gpu.texture\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER => "SDL.texture.create.gpu.texture"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER \"SDL.texture.create.gpu.texture_uv\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER => "SDL.texture.create.gpu.texture_uv"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER \"SDL.texture.create.gpu.texture_u\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER => "SDL.texture.create.gpu.texture_u"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_POINTER \"SDL.texture.create.gpu.texture_v\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_POINTER => "SDL.texture.create.gpu.texture_v"u8;
 
         [NativeTypeName("#define SDL_PROP_TEXTURE_COLORSPACE_NUMBER \"SDL.texture.colorspace\"")]
         public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_COLORSPACE_NUMBER => "SDL.texture.colorspace"u8;
@@ -663,6 +780,18 @@ namespace SDL
 
         [NativeTypeName("#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER \"SDL.texture.vulkan.texture\"")]
         public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER => "SDL.texture.vulkan.texture"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER \"SDL.texture.gpu.texture\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER => "SDL.texture.gpu.texture"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER \"SDL.texture.gpu.texture_uv\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER => "SDL.texture.gpu.texture_uv"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER \"SDL.texture.gpu.texture_u\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER => "SDL.texture.gpu.texture_u"u8;
+
+        [NativeTypeName("#define SDL_PROP_TEXTURE_GPU_TEXTURE_V_POINTER \"SDL.texture.gpu.texture_v\"")]
+        public static ReadOnlySpan<byte> SDL_PROP_TEXTURE_GPU_TEXTURE_V_POINTER => "SDL.texture.gpu.texture_v"u8;
 
         [NativeTypeName("#define SDL_RENDERER_VSYNC_DISABLED 0")]
         public const int SDL_RENDERER_VSYNC_DISABLED = 0;

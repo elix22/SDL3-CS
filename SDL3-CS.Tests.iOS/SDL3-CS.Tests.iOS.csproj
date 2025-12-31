@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-ios</TargetFramework>
@@ -11,12 +11,19 @@
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
 
+  <PropertyGroup Label="NuGet">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\SDL3-CS.Tests\SDL3-CS.Tests.csproj" PrivateAssets="all"/>
   </ItemGroup>
 
   <ItemGroup>
     <NativeReference Include="$(MSBuildThisFileDirectory)..\native\ios\SDL3.xcframework"/>
+    <NativeReference Include="$(MSBuildThisFileDirectory)..\native\ios\SDL3_image.xcframework"/>
+    <NativeReference Include="$(MSBuildThisFileDirectory)..\native\ios\SDL3_ttf.xcframework"/>
+    <NativeReference Include="$(MSBuildThisFileDirectory)..\native\ios\SDL3_mixer.xcframework"/>
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,10 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
+  <PropertyGroup Label="NuGet">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup Label="Package References">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
     <PackageReference Include="NUnit" Version="3.13.3"/>
@@ -18,6 +22,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SDL3-CS\SDL3-CS.csproj"/>
+    <ProjectReference Include="..\SDL3_image-CS\SDL3_image-CS.csproj"/>
+    <ProjectReference Include="..\SDL3_ttf-CS\SDL3_ttf-CS.csproj"/>
+    <ProjectReference Include="..\SDL3_mixer-CS\SDL3_mixer-CS.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\External\SDL_image\test\sample.png" Condition="Exists('..\External\SDL_image\test\sample.png')">
+      <Link>sample.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -32,8 +32,13 @@ using System;
 
             foreach (var kvp in finder.Methods)
             {
+                if (kvp.Value.Count == 0)
+                    return;
+
                 string filename = kvp.Key;
                 var foundMethods = kvp.Value;
+
+                string className = ClassNameFromMethod(foundMethods.First().NativeMethod);
 
                 var result = new StringBuilder();
                 result.Append(file_header);
@@ -42,7 +47,7 @@ using System;
                                      SyntaxFactory.IdentifierName("SDL"))
                                  .WithMembers(
                                      SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                         SyntaxFactory.ClassDeclaration("SDL3")
+                                         SyntaxFactory.ClassDeclaration(className)
                                                       .WithModifiers(
                                                           SyntaxFactory.TokenList(
                                                               SyntaxFactory.Token(SyntaxKind.UnsafeKeyword),
@@ -52,6 +57,16 @@ using System;
 
                 context.AddSource(filename, result.ToString());
             }
+        }
+
+        private static string ClassNameFromMethod(MethodDeclarationSyntax methodNode)
+        {
+            if (methodNode.Parent is ClassDeclarationSyntax classDeclaration)
+            {
+                return classDeclaration.Identifier.Text;
+            }
+
+            return "SDL3"; // fallback!
         }
 
         private static MemberDeclarationSyntax makeFriendlyMethod(GeneratedMethod gm)
@@ -126,7 +141,10 @@ using System;
             if (gm.RequiredChanges.HasFlag(Changes.ChangeReturnTypeToString))
             {
                 expr = SyntaxFactory.InvocationExpression(
-                                        SyntaxFactory.IdentifierName("PtrToStringUTF8"))
+                                        SyntaxFactory.MemberAccessExpression(
+                                            SyntaxKind.SimpleMemberAccessExpression,
+                                            SyntaxFactory.IdentifierName("SDL3"),
+                                            SyntaxFactory.IdentifierName("PtrToStringUTF8")))
                                     .WithArguments(new[]
                                         {
                                             SyntaxFactory.Argument(makeFunctionCall(gm)),

@@ -26,16 +26,20 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install .NET workloads
-        run: dotnet workload restore SDL3-CS/SDL3-CS.csproj
+        run: dotnet workload restore
 
       - name: Build & pack
-        run: dotnet pack SDL3-CS/SDL3-CS.csproj -c Release /p:Version=$(git describe --exact-match --tags HEAD)
+        run: |
+          dotnet pack SDL3-CS/SDL3-CS.csproj -c Release /p:Version=$(git describe --exact-match --tags HEAD) -o artifacts
+          dotnet pack SDL3_image-CS/SDL3_image-CS.csproj -c Release /p:Version=$(git describe --exact-match --tags HEAD) -o artifacts
+          dotnet pack SDL3_ttf-CS/SDL3_ttf-CS.csproj -c Release /p:Version=$(git describe --exact-match --tags HEAD) -o artifacts
+          dotnet pack SDL3_mixer-CS/SDL3_mixer-CS.csproj -c Release /p:Version=$(git describe --exact-match --tags HEAD) -o artifacts
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SDL3-CS
-          path: SDL3-CS/bin/Release/ppy.*.nupkg
+          name: Packages
+          path: artifacts/ppy.*.nupkg
 
       - name: Publish tagged release to nuget.org
-        run: dotnet nuget push SDL3-CS/bin/Release/ppy.*.nupkg -s https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_API_KEY}}
+        run: dotnet nuget push artifacts/ppy.*.nupkg -s https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_API_KEY}}
