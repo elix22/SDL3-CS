@@ -330,7 +330,7 @@ namespace SDL
         public static extern SDL_Joystick* SDL_GetGamepadJoystick(SDL_Gamepad* gamepad);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void SDL_SetGamepadEventsEnabled([NativeTypeName("bool")] SDLBool enabled);
+        public static extern void SDL_SetGamepadEventsEnabled([NativeTypeName("bool")] [MarshalAs(UnmanagedType.U1)] bool enabled);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
@@ -401,7 +401,7 @@ namespace SDL
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
-        public static extern SDLBool SDL_SetGamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type, [NativeTypeName("bool")] SDLBool enabled);
+        public static extern SDLBool SDL_SetGamepadSensorEnabled(SDL_Gamepad* gamepad, SDL_SensorType type, [NativeTypeName("bool")] [MarshalAs(UnmanagedType.U1)] bool enabled);
 
         [DllImport("SDL3", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]

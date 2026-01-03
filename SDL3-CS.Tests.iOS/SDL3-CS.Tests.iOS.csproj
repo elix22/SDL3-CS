@@ -9,6 +9,7 @@
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <_XcodeVersionCheckEnforced>false</_XcodeVersionCheckEnforced>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
@@ -16,7 +17,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SDL3-CS.Tests\SDL3-CS.Tests.csproj" PrivateAssets="all"/>
+    <ProjectReference Include="..\SDL3-CS.Tests\SDL3-CS.Tests.csproj" PrivateAssets="all" ExcludeAssets="contentfiles;build;native">
+      <Properties>SkipMacNativeLibs=true</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="**\*.dylib" />
+    <None Remove="**\*.dylib" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeReference Include="..\native\ios\SDL3.xcframework">
+      <Kind>Framework</Kind>
+    </NativeReference>
+    <NativeReference Include="..\native\ios\SDL3_image.xcframework">
+      <Kind>Framework</Kind>
+    </NativeReference>
+    <NativeReference Include="..\native\ios\SDL3_mixer.xcframework">
+      <Kind>Framework</Kind>
+    </NativeReference>
+    <NativeReference Include="..\native\ios\SDL3_ttf.xcframework">
+      <Kind>Framework</Kind>
+    </NativeReference>
   </ItemGroup>
 
   <ItemGroup>

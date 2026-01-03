@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
+  </PropertyGroup>
+</Project>

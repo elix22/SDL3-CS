@@ -1,0 +1,4 @@
+<Project>
+  <Target Name="_CheckXcodeVersion" />
+  <Target Name="_CheckVersions" />
+</Project>
