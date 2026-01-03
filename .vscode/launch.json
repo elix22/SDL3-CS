@@ -1,0 +1,61 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Android (Breakpoints)",
+            "type": "maui",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/SDL3-CS.Tests.Android/SDL3-CS.Tests.Android.csproj"
+        },
+        {
+            "name": "Run Android (No Debugger)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Run Android (Debug)",
+            "program": "${workspaceFolder}/SDL3-CS.Tests.Android/bin/Debug/net10.0-android/SDL3-CS.Tests.Android.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SDL3-CS.Tests.Android",
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Debug Desktop",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build Desktop (Debug)",
+            "program": "${workspaceFolder}/SDL3-CS.Tests/bin/Debug/net10.0/SDL3-CS.Tests.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SDL3-CS.Tests",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Run Desktop (Release)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build Desktop (Release)",
+            "program": "${workspaceFolder}/SDL3-CS.Tests/bin/Release/net10.0/SDL3-CS.Tests.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SDL3-CS.Tests",
+            "console": "internalConsole"
+        },
+        {
+            "name": "Debug iOS (Breakpoints)",
+            "type": "maui",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/SDL3-CS.Tests.iOS/SDL3-CS.Tests.iOS.csproj",
+            "targetFramework": "net10.0-ios"
+        },
+        {
+            "name": "Run iOS (No Debugger)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Run iOS (Debug)",
+            "program": "${workspaceFolder}/SDL3-CS.Tests.iOS/bin/Debug/net10.0-ios/SDL3-CS.Tests.iOS.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SDL3-CS.Tests.iOS",
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}
